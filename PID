@@ -1,0 +1,56 @@
+ 
+#include <stdio.h>
+#include <time.h>
+
+extern "C" int init(int d_lev);
+extern "C" int Sleep(int sec, int usec);
+extern "C" int set_motor(int motor, int speed);
+extern "C" int take_picture();
+extern "C" char get_pixel(int row, int col, int colour);
+
+int main(){
+    //sets up the RPi hardware and checks
+    //that everything is working correctly
+    init(0);
+    char reading;
+    int setMotor;
+    int elements = 320;
+    int fixArray[elements];
+    int camArray2[elements];
+    int errorArray[elements];	
+    int errorSum = 0;
+    int i;
+    int engineScale;
+    
+while(true){
+
+    for (i=0; i<elements;i++){					//fills fixed array	
+    int j = -160;						
+    fixArray[i] = j						
+    j++;
+    }
+      
+    for (i=0; i<elements;i++){					//fills camera array
+    int blackWhite = 0;
+    take_picture();						
+    reading = get_pixel(i, 120, 3);					
+    if(reading > 128){ blackWhite = 1;}
+    camArray[i] = blackWhite;
+    }
+    
+    for (i=0; i<elements;i++){					//multiply fixed array and camera array
+    errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
+    }					
+
+    for (i=0; i<elements;i++){					//sums up all numbers in error array
+    errorSum = errorSum + errorArray[i];			//and modifies the errorSum variable ^
+    }
+    
+   
+    
+    }
+  
+    }
+    
+    
+
