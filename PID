@@ -1,4 +1,3 @@
- 
 #include <stdio.h>
 #include <time.h>
 
@@ -13,44 +12,56 @@ int main(){
     //that everything is working correctly
     init(0);
     char reading;
-    int setMotor;
+    float scaleConstant = 0.1;
+    int motorConstant = 50;
     int elements = 320;
     int fixArray[elements];
     int camArray2[elements];
     int errorArray[elements];	
     int errorSum = 0;
     int i;
-    int engineScale;
-    
+    int scaledSignal = 0;
+
 while(true){
 
-    for (i=0; i<elements;i++){					//fills fixed array	
+    for (i=0; i<elements;i++){					                      //fills fixed array	
     int j = -160;						
     fixArray[i] = j						
     j++;
     }
       
-    for (i=0; i<elements;i++){					//fills camera array
-    int blackWhite = 0;
-    take_picture();						
-    reading = get_pixel(i, 120, 3);					
+    for (i=0; i<elements;i++){					                      //fills camera array
+    int blackWhite = 0;						                            //cameraArray receives either a 0 or 1 based on whether
+    take_picture();						                                //each of the numbers in the array are <> 128
+    reading = get_pixel(i, 120, 3);							
     if(reading > 128){ blackWhite = 1;}
     camArray[i] = blackWhite;
     }
     
-    for (i=0; i<elements;i++){					//multiply fixed array and camera array
-    errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
+    for (i=0; i<elements;i++){					                      //multiply fixed array and camera array
+    errorArray[i] = fixArray[i]*camArray[i];			          //and fills array with those results
     }					
 
-    for (i=0; i<elements;i++){					//sums up all numbers in error array
-    errorSum = errorSum + errorArray[i];			//and modifies the errorSum variable ^
-    }
-    
-   
-    
-    }
-  
+    for (i=0; i<elements;i++){					                      //sums up all numbers in error array
+    errorSum = errorSum + errorArray[i];			              //and modifies the errorSum variable ^
     }
     
     
+    scaledSignal = errorSum*scaleConstant;			
+								
+
+    if(scaledSignal < 0){
+    set_motor(1, motorConsant/scaledSignal);			          //This part is based on the assumption that set_motor(1,...
+    set_motor(2, (0-1)*motorConstant*abs(scaledSignal));	//is the left motor and set_motor(2,... is the right motor
+    }								                                            //When turning left, left motor slows while right motor speeds up
+    else if(scaledSignal > 0){					                      //abs() function around the scaledSignal here is part of the general
+    set_motor(1, motorConsant*abs(scaledSignal));		      //c library for giving the absolute value of a number.
+    set_motor(2, (0-1)*motorConstant/scaledSignal);
+    }
+    else {
+    set_motor(1, motorConstant);
+    set_motor(2, (0-1)*motorConstant);
+    }
+
+}
 
