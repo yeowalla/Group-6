@@ -19,7 +19,7 @@ int main(){
     int elements = 320;
 
     int fixArray[elements];
-    int camArray2[elements];
+    int camArray[elements];
     int errorArray[elements];	
 
     int errorSum = 0;
