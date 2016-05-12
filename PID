@@ -91,5 +91,6 @@ while(true){
     }
 
     Sleep (errorPeriod, 0);
+    }
 }
 
