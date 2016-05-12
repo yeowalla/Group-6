@@ -15,13 +15,13 @@ int main(){
     //sets up the RPi hardware and checks
     //that everything is working correctly
     init(0);
-    
+
     connect_to_server("130.195.6.196", 1024);
     send_to_server("Please");
     char message[24];
     receive_from_server(message);
     printf("%s", message);
-    
+
     char reading;
     float pConstant = 0.1;					//Kp
     float dConstant = 0.05;						//Kd
@@ -31,7 +31,7 @@ int main(){
 
     int fixArray[elements];
     int camArray[elements];
-    int errorArray[elements];	
+    int errorArray[elements];
 
     int errorSum = 0;
     int pSignal = 0;
@@ -39,51 +39,57 @@ int main(){
     int previousError = 0;
     int dSignal = 0;
     int i;
-    
+
 
 while(true){
 
-    for (i=0; i<elements;i++){					//fills fixed array	
-    int j = -160;						
-    fixArray[i] = j						
+    for (i=0; i<elements;i++){					//fills fixed array
+    int j = -160;
+    fixArray[i] = j;
     j++;
     }
-      
+
     for (i=0; i<elements;i++){					//fills camera array
     int blackWhite = 0;						//cameraArray receives either a 0 or 1 based on whether
     take_picture();						//each of the numbers in the array are <> 128
-    reading = get_pixel(i, 120, 3);							
+    reading = get_pixel(i, 120, 3);
     if(reading > 128){ blackWhite = 1;}
     camArray[i] = blackWhite;
     }
-    
+
     for (i=0; i<elements;i++){					//multiply fixed array and camera array
     errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
 
     if (i > 0){
     currentError = errorArray[i];					//Conditional within this loop to store the values
-    previousError = errorArray[i-1];					//of the arrays in currentError and previousError 
+    previousError = errorArray[i-1];					//of the arrays in currentError and previousError
     dSignal = (currentError-previousError)/errorPeriod*dConstant;	//once there are at least 2 elements in the array.
-    }					
+    }
     }
 
 
     for (i=0; i<elements;i++){					//sums up all numbers in error array
     errorSum = errorSum + errorArray[i];			//and modifies the errorSum variable ^
     }
-    
 
-    
-    pSignal = errorSum*pConstant;			
-								
+
+
+    pSignal = errorSum*pConstant;
+
 
     if(pSignal < 0){
-    set_motor(1, motorConsant/(pSignal+dSignal);		//This part is based on the assumption that set_motor(1,...
-    set_motor(2, (0-1)*motorConstant*(abs(pSignal+dSignal));	//is the left motor and set_motor(2,... is the right motor
+    set_motor(1, motorConstant/(pSignal+dSignal));		//This part is based on the assumption that set_motor(1,...
+        if(pSignal+dSignal < 0){
+        set_motor(2, (0-1)*motorConstant*(0-1)*(pSignal+dSignal));
+        }
+    set_motor(2, (0-1)*motorConstant*(pSignal+dSignal));	//is the left motor and set_motor(2,... is the right motor
     }								//When turning left, left motor slows while right motor speeds up
-    else if(pSignal > 0){					//abs() function around the signal here is part of the general
-    set_motor(1, motorConsant*abs(pSignal+dSignal));		//c library for giving the absolute value of a number.
-    set_motor(2, (0-1)*motorConstant/(pSignal+dSignal);
+    else if(pSignal > 0){					
+        if (pSignal+dSignal < 0){
+        set_motor(1, motorConstant*(0-1)*(pSignal+dSignal));
+        }
+    set_motor(1, motorConstant*(pSignal+dSignal));		
+    set_motor(2, (0-1)*motorConstant/(pSignal+dSignal));
     }
     else {
     set_motor(1, motorConstant);
@@ -93,4 +99,3 @@ while(true){
     Sleep (errorPeriod, 0);
     }
 }
-
