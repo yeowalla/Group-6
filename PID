@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <stdio.h>
-#include <time.h>
-
 extern "C" int init(int d_lev);
 extern "C" int Sleep(int sec, int usec);
 extern "C" int set_motor(int motor, int speed);
@@ -34,6 +31,12 @@ int main(){
     int elements = 320;
 
     int fixArray[elements];
+    	for (i=0; i<(elements);i++){					//fills fixed array
+    	int j = -160;
+    	fixArray[i] = j;
+    	j++;
+    	}
+
     int camArray[elements];
     int errorArray[elements];
 
@@ -53,11 +56,6 @@ int main(){
     
 while(true){
 
-    for (i=0; i<(elements);i++){					//fills fixed array
-    int j = -160;
-    fixArray[i] = j;
-    j++;
-    }
 
     for (i=0; i<(elements);i++){					//fills camera array
     int blackWhite = 0;						//cameraArray receives either a 0 or 1 based on whether
