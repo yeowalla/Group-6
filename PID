@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <stdio.h>
+#include <time.h>
+
 extern "C" int init(int d_lev);
 extern "C" int Sleep(int sec, int usec);
 extern "C" int set_motor(int motor, int speed);
@@ -21,10 +24,11 @@ int main(){
     char message[24];
     receive_from_server(message);
     printf("%s", message);
-
+	 
+	 int i;
     int reading;
-    float pConstant = 0.1;					//Kp
-    float dConstant = 0.05;						//Kd
+    float pConstant = 0.5;					//Kp
+    float dConstant = 0.2;						//Kd
     float errorPeriod = 0.01;
     int motorConstant = 50;
     int elements = 320;
@@ -34,22 +38,28 @@ int main(){
     int errorArray[elements];
 
     int errorSum = 0;
-    int pSignal = 0;
+    int pSignal = errorSum*pConstant;;
     int currentError = 0;
     int previousError = 0;
-    int dSignal = 0;
-    int i;
-
-
+    int dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
+    int signalPID = pSignal+dSignal;
+    double leftMotor;
+    			if(leftMotor > 255){leftMotor = 255;}
+    			if(leftMotor < (0-255){leftMotor = 0-255;}
+    double rightMotor = (0-1)*rightMotor;
+    			if(rightMotor > 255){rightMotor = 255;}
+				if(rightMotor < 0-255){rightMotor = 0-255;}
+    		
+    
 while(true){
 
-    for (i=0; i<elements;i++){					//fills fixed array
+    for (i=0; i<(elements);i++){					//fills fixed array
     int j = -160;
     fixArray[i] = j;
     j++;
     }
 
-    for (i=0; i<elements;i++){					//fills camera array
+    for (i=0; i<(elements);i++){					//fills camera array
     int blackWhite = 0;						//cameraArray receives either a 0 or 1 based on whether
     take_picture();						//each of the numbers in the array are <> 128
     reading = get_pixel(i, 120, 3);
@@ -57,13 +67,13 @@ while(true){
     camArray[i] = blackWhite;
     }
 
-    for (i=0; i<elements;i++){					//multiply fixed array and camera array
+    for (i=0; i<(elements);i++){					//multiply fixed array and camera array
     errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
 
-    if (i > 0){
+    if (i>0){
     currentError = errorArray[i];					//Conditional within this loop to store the values
     previousError = errorArray[i-1];					//of the arrays in currentError and previousError
-    dSignal = (currentError-previousError)/errorPeriod*dConstant;	//once there are at least 2 elements in the array.
+    																//once there are at least 2 elements in the array.
     }
     }
 
@@ -73,29 +83,22 @@ while(true){
     }
 
 
-
-    pSignal = errorSum*pConstant;
-
-
-    if(pSignal < 0){
-    set_motor(1, motorConstant/(pSignal+dSignal));		//This part is based on the assumption that set_motor(1,...
-        if(pSignal+dSignal < 0){
-        set_motor(2, (0-1)*motorConstant*(0-1)*(pSignal+dSignal));
-        }
-    set_motor(2, (0-1)*motorConstant*(pSignal+dSignal));	//is the left motor and set_motor(2,... is the right motor
-    }								//When turning left, left motor slows while right motor speeds up
-    else if(pSignal > 0){					//abs() function around the signal here is part of the general
-        if (pSignal+dSignal < 0){
-        set_motor(1, motorConstant*(0-1)*(pSignal+dSignal));
-        }
-    set_motor(1, motorConstant*(pSignal+dSignal));		//c library for giving the absolute value of a number.
-    set_motor(2, (0-1)*motorConstant/(pSignal+dSignal));
+    if(signalPID < 0){
+	 leftMotor = 1/signalPID;
+	 rightMotor = motorConstant+signalPID;
+    }
+    else if(signalPID > 0){
+	 leftMotor = motorConstant+signalPID;
+	 rightMotor = 1/signalPID
     }
     else {
-    set_motor(1, motorConstant);
-    set_motor(2, (0-1)*motorConstant);
+	 leftMotor = 50;
+	 rightMotor = 50;    
     }
-
+    
+    set_motor(1, leftMotor);
+    set_motor(2, rightMotor);
+ 	 
     Sleep (errorPeriod, 0);
     }
 }
