@@ -60,9 +60,9 @@ while(true){
 
     take_picture();
     int nwp = 0;															//number of white pixels	
-    					
+    int blackWhite;					
     for (i=0; i<ELEMENTS;i++){		
-    	 int blackWhite = 0;								     																			
+       blackWhite = 0;								     																			
        reading = get_pixel(i, 120, 3);								//fills camera array
        if(reading > 128){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
        camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
@@ -80,20 +80,19 @@ while(true){
     previousError = currentError;									//These two statements for calculating derivative signal
     currentError = errorSum;													
     																			
-
-    if(signalPID < 0){
+    if(nwp > 0){
+	if(signalPID < 0){
 	 	leftMotor = motorConstant/signalPID;
 	 	rightMotor = motorConstant+signalPID;
     }
-    else if(signalPID > 0){
+	else if(signalPID > 0){
 	 	leftMotor = motorConstant+signalPID;
 	 	rightMotor = motorConstant/signalPID;
     }
-    else {
-	 	leftMotor = 50;
-	 	rightMotor = 50;    
+	else {leftMotor = 50; rightMotor = 50;}
     }
-    
+    else {leftMotor = -50; rightMotor = -50;}
+    }
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
  	 
