@@ -87,12 +87,12 @@ while(true){
     																			
 
     if(signalPID < 0){
-	 leftMotor = 1/signalPID;
+	 leftMotor = motorConstant/signalPID;
 	 rightMotor = motorConstant+signalPID;
     }
     else if(signalPID > 0){
 	 leftMotor = motorConstant+signalPID;
-	 rightMotor = 1/signalPID
+	 rightMotor = motorConstant/signalPID
     }
     else {
 	 leftMotor = 50;
