@@ -81,22 +81,22 @@ while(true){
     for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
       errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
     }
-    errorSum = errorSum/nwp;
+    errorSum = errorSum/nwp;											
     previousError = currentError;									//These two statements for calculating derivative signal
     currentError = errorSum;													
     																			
 
     if(signalPID < 0){
-	 leftMotor = motorConstant/signalPID;
-	 rightMotor = motorConstant+signalPID;
+	 	leftMotor = motorConstant/signalPID;
+	 	rightMotor = motorConstant+signalPID;
     }
     else if(signalPID > 0){
-	 leftMotor = motorConstant+signalPID;
-	 rightMotor = motorConstant/signalPID
+	 	leftMotor = motorConstant+signalPID;
+	 	rightMotor = motorConstant/signalPID;
     }
     else {
-	 leftMotor = 50;
-	 rightMotor = 50;    
+	 	leftMotor = 50;
+	 	rightMotor = 50;    
     }
     
     set_motor(1, leftMotor);
