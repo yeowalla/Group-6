@@ -25,16 +25,15 @@ int main(){
     printf("%s", message);
 	 
 	 int i;
+	 int j = -160;
     int reading;
     float pConstant = 0.5;					//Kp
     float dConstant = 0.2;						//Kd
     float errorPeriod = 0.01;
     int motorConstant = 50;
-    //int elements = 320;
 
     int fixArray[ELEMENTS];
-    	for (i=0; i<(ELEMENTS);i++){					//fills fixed array
-    	int j = -160;
+    	for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
     	fixArray[i] = j;
     	j++;
     	}
@@ -48,6 +47,7 @@ int main(){
     int previousError = 0;
     int dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
     int signalPID = pSignal+dSignal;
+    
     double leftMotor;
     			if(leftMotor > 255){leftMotor = 255;}
     			if(leftMotor < (0-255){leftMotor = 0-255;}
@@ -59,28 +59,27 @@ int main(){
 while(true){
 
     take_picture();
-    int blackWhite = 0;
-    int nwp = 0;					
-    for (i=0; i<ELEMENTS;i++){					//fills camera array
-     	//cameraArray receives either a 0 or 1 based on whether
-    						//each of the numbers in the array are <> 128
-       reading = get_pixel(i, 120, 3);
-       if(reading > 128){ blackWhite = 1; nwp++;}
-       camArray[i] = blackWhite;
+    int nwp = 0;															//number of white pixels
+    					
+    for (i=0; i<ELEMENTS;i++){		
+    	 int blackWhite = 0;								     																			
+       reading = get_pixel(i, 120, 3);								//fills camera array
+       if(reading > 128){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
+       camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
     }
 
-    for (i=0; i<(elements);i++){					//multiply fixed array and camera array
-      errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
+    for (i=0; i<ELEMENTS;i++){										//multiply fixed array and camera array
+      errorArray[i] = fixArray[i]*camArray[i];					//and fills array with those results
       if (i>0){
-        currentError = errorArray[i];					//Conditional within this loop to store the values
-        //previousError = errorArray[i-1];					//of the arrays in currentError and previousError
-    																//once there are at least 2 elements in the array.
+        currentError = errorArray[i];								//Conditional within this loop to store the values
+        previousError = errorArray[i-1];							//of the arrays in currentError and previousError
+    																			//once there are at least 2 elements in the array.
        }
     }
 
 
-    for (i=0; i<elements;i++){					//sums up all numbers in error array
-      errorSum = errorSum + errorArray[i];			//and modifies the errorSum variable ^
+    for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
+      errorSum = (errorSum + errorArray[i])/nwp;						//and modifies the errorSum variable ^
     }
     
 
