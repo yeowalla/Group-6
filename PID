@@ -59,7 +59,7 @@ int main(){
 while(true){
 
     take_picture();
-    int nwp = 0;															//number of white pixels
+    int nwp = 0;															//number of white pixels	
     					
     for (i=0; i<ELEMENTS;i++){		
     	 int blackWhite = 0;								     																			
@@ -79,9 +79,12 @@ while(true){
 
 
     for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
-      errorSum = (errorSum + errorArray[i])/nwp;						//and modifies the errorSum variable ^
+      errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
     }
-    
+    errorSum = errorSum/nwp;
+    previousError = currentError;									//These two statements for calculating derivative signal
+    currentError = errorSum;													
+    																			
 
     if(signalPID < 0){
 	 leftMotor = 1/signalPID;
