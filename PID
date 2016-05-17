@@ -70,11 +70,6 @@ while(true){
 
     for (i=0; i<ELEMENTS;i++){										//multiply fixed array and camera array
       errorArray[i] = fixArray[i]*camArray[i];					//and fills array with those results
-      if (i>0){
-        currentError = errorArray[i];								//Conditional within this loop to store the values
-        previousError = errorArray[i-1];							//of the arrays in currentError and previousError
-    																			//once there are at least 2 elements in the array.
-       }
     }
 
 
@@ -102,6 +97,6 @@ while(true){
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
  	 
-    Sleep (errorPeriod, 0);
+    Sleep (0, errorPeriod*100000);
     }
 }
