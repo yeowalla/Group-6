@@ -72,15 +72,15 @@ while(true){
     currentError = errorSum;
 
     if(nwp > 0){
-	 if(signalPID < 0){
-	 	leftMotor = motorConstant/signalPID;
-	 	rightMotor = motorConstant+signalPID;
-    }
-	 else if(signalPID > 0){
-	 	leftMotor = motorConstant+signalPID;
-	 	rightMotor = motorConstant/signalPID;
-    }
-	 else {leftMotor = 100; rightMotor = 100;}
+		 if(signalPID < 0){
+		 	leftMotor = motorConstant/signalPID;
+		 	rightMotor = motorConstant+signalPID;
+	    }
+		 else if(signalPID > 0){
+		 	leftMotor = motorConstant+signalPID;
+		 	rightMotor = motorConstant/signalPID;
+	    }
+		 else {leftMotor = 100; rightMotor = 100;}
     }
     else {leftMotor = -100; rightMotor = -100;}
 
