@@ -11,8 +11,6 @@ extern "C" char get_pixel(int row, int col, int colour);
 #define ELEMENTS 320
 
 int main(){
-    //sets up the RPi hardware and checks
-    //that everything is working correctly
     init(0);
 
 	 int i;
