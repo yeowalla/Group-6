@@ -42,7 +42,7 @@ int main(){
     			if(leftMotor < -255){leftMotor = -255;}
     double rightMotor = (-1)*rightMotor;
     			if(rightMotor > 255){rightMotor = 255;}
-			if(rightMotor < -255){rightMotor = -255;}
+				if(rightMotor < -255){rightMotor = -255;}
 
 
 while(true){
@@ -72,10 +72,10 @@ while(true){
     if(nwp > 0){
 		 if(signalPID < 0){
 		 	leftMotor = motorConstant/signalPID;
-		 	rightMotor = motorConstant+signalPID;
+		 	rightMotor = (signalPID/255)*100;
 	    }
 		 else if(signalPID > 0){
-		 	leftMotor = motorConstant+signalPID;
+		 	leftMotor = (signalPID/255)*100;
 		 	rightMotor = motorConstant/signalPID;
 	    }
 		 else {leftMotor = 100; rightMotor = 100;}
