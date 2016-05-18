@@ -18,7 +18,7 @@ int main(){
     int reading;
     float pConstant = 0.5;					//Kp
     float dConstant = 0.2;						//Kd
-    float errorPeriod = 0.01;
+    float errorPeriod = 0.1;
     int motorConstant = 50;
 
     int fixArray[ELEMENTS];
@@ -39,10 +39,10 @@ int main(){
 
     double leftMotor;
     			if(leftMotor > 255){leftMotor = 255;}
-    			if(leftMotor < (0-255)){leftMotor = 0-255;}
-    double rightMotor = (0-1)*rightMotor;
+    			if(leftMotor < -255){leftMotor = -255;}
+    double rightMotor = (-1)*rightMotor;
     			if(rightMotor > 255){rightMotor = 255;}
-				if(rightMotor < 0-255){rightMotor = 0-255;}
+			if(rightMotor < -255){rightMotor = -255;}
 
 
 while(true){
@@ -85,7 +85,7 @@ while(true){
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
 
-    Sleep (0, errorPeriod*10000);
+    Sleep (0, errorPeriod*100000);
     }
-return 0;
+	return 0;
 }
