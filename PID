@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <time.h>
 
@@ -16,7 +17,7 @@ int main(){
 	 int i;
 	 int j = -160;
     int reading;
-    float pConstant = 0.5;					//Kp
+    float pConstant = 1;					//Kp
     float dConstant = 0.2;						//Kd
     float errorPeriod = 0.1;
     int motorConstant = 50;
@@ -53,7 +54,7 @@ while(true){
     for (i=0; i<ELEMENTS;i++){
        blackWhite = 0;
        reading = get_pixel(i, 120, 3);								//fills camera array
-       if(reading > 128){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
+       if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
        camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
     }
 
@@ -66,18 +67,17 @@ while(true){
       errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
     }
     
-    if(nwp > 0){errorSum = errorSum/nwp;}
     previousError = currentError;									//These two statements for calculating derivative signal
     currentError = errorSum;
 
     if(nwp > 0){
 	 if(signalPID < 0){
 	 	rightMotor = (signalPID/100)*255;
-	 	leftMotor = rightMotor/2;
+	 	leftMotor = 1/rightMotor;
     }
 	 else if(signalPID > 0){
 	 	leftMotor = (signalPID/100)*255;
-	 	rightMotor = leftMotor/2;
+	 	rightMotor = 1/leftMotor;
     }
 	 else {leftMotor = 60; rightMotor = 60;}
     }
@@ -85,7 +85,6 @@ while(true){
 
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
-
     Sleep (0, errorPeriod*100000);
     }
 
