@@ -72,16 +72,16 @@ while(true){
 
     if(nwp > 0){
 	 if(signalPID < 0){
-	 	leftMotor = motorConstant/signalPID;
 	 	rightMotor = (signalPID/100)*255;
+	 	leftMotor = rightMotor/2;
     }
 	 else if(signalPID > 0){
 	 	leftMotor = (signalPID/100)*255;
-	 	rightMotor = motorConstant/signalPID;
+	 	rightMotor = leftMotor/2;
     }
-	 else {leftMotor = 127; rightMotor = 127;}
+	 else {leftMotor = 60; rightMotor = 60;}
     }
-    else {leftMotor = -127; rightMotor = -127;}
+    else {leftMotor = -60; rightMotor = -60;}
 
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
