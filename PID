@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <time.h>
 
@@ -13,72 +12,98 @@ extern "C" char get_pixel(int row, int col, int colour);
 
 int main(){
     init(0);
-
-	 int i;
-	 int j = -160;
+    int nwp;
+    int i;
+    int j = -160;
     int reading;
+    int blackWhite;
     float pConstant = 1;					//Kp
     float dConstant = 0.2;						//Kd
     float errorPeriod = 0.1;
     int motorConstant = 50;
 
     int fixArray[ELEMENTS];
-    	for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
-    	fixArray[i] = j;
-    	j++;
-    	}
-
     int camArray[ELEMENTS];
     int errorArray[ELEMENTS];
 
-    int errorSum = 0;
-    int pSignal = errorSum*pConstant;
+    int errorSum;
+    int pSignal = 0;								//errorSum*pConstant;
     int currentError = 0;
     int previousError = 0;
-    int dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
-    int signalPID = pSignal+dSignal;
+    int dSignal = 0;                                                      //((currentError-previousError)/errorPeriod)*dConstant;
+    int signalPID = 0;
 
     double leftMotor;
-    			if(leftMotor > 255){leftMotor = 255;}
-    			if(leftMotor < -255){leftMotor = -255;}
     double rightMotor = (-1)*rightMotor;
-    			if(rightMotor > 255){rightMotor = 255;}
-				if(rightMotor < 255){rightMotor = -255;}
-
+    
+int array1(){
+    for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
+    	fixArray[i] = j;
+    	j++;    
+    }
+    return 0;
+}
 
 while(true){
-
+int array2(){
     take_picture();
-    int nwp = 0;															//number of white pixels
+    nwp = 0;															//number of white pixels
     int blackWhite;
-    for (i=0; i<ELEMENTS;i++){
-       blackWhite = 0;
-       reading = get_pixel(i, 120, 3);								//fills camera array
-       if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
-       camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
-    }
+	for (i=0; i<ELEMENTS;i++){
+	blackWhite = 0;
+	reading = get_pixel(i, 120, 3);								//fills camera array
+	if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
+	camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
+	}
+    return 0;
+}
 
-    for (i=0; i<ELEMENTS;i++){										//multiply fixed array and camera array
-      errorArray[i] = fixArray[i]*camArray[i];					//and fills array with those results
+int array3(){
+    for (i=0; i<ELEMENTS;i++){										
+    errorArray[i] = fixArray[i]*camArray[i];		//fills errorArray with products between fix and cam array
     }
+    return 0;
+}
 
-
-    for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
-      errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
-    }
-    
-    previousError = currentError;									//These two statements for calculating derivative signal
+int sumOfError(){
+    while(true){
+    errorSum = 0;
+	for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
+	errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
+	}
     currentError = errorSum;
+    }
+    return 0;
+}
 
+int proportionalSignal(){
+    pSignal = errorSum*pConstant;
+    return 0;
+}
+
+int derivativeSignal(){
+    Sleep (0.errorPeriod*100000);pSignal+dSignal;
+    dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
+    previousError = currentError;
+    return 0;
+}
+
+int pidError(){
+    signalPID = pSignal+dSignal;
+    return 0;
+}
+
+int motorControl(){
+    while(true){
     if(nwp > 0){
 	 if(signalPID < 0){
 	 	rightMotor = (signalPID/100)*255;
 	 	leftMotor = 1/rightMotor;
-    }
+	 }
 	 else if(signalPID > 0){
 	 	leftMotor = (signalPID/100)*255;
 	 	rightMotor = 1/leftMotor;
-    }
+	 }
 	 else {leftMotor = 60; rightMotor = 60;}
     }
     else {leftMotor = -60; rightMotor = -60;}
@@ -87,5 +112,8 @@ while(true){
     set_motor(2, rightMotor);
     Sleep (0, errorPeriod*100000);
     }
-
+    return 0;
+    }
+}
+return 0;
 }
