@@ -74,7 +74,9 @@ while(true){
     printf("P Signal is:  %d", pSignal);
     printf("D Signal is:  %d", dSignal);
     printf("PID Signal is:  %d", signalPID);
-	 printf("NWP Signal is:  %d", nwp);   
+	 printf("NWP Signal is:  %d", nwp); 
+	
+//	printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d/n", pSignal, dSignal, signalPID, nwp);
     
 	 if(nwp = 0){
 	 leftMotor = -motorConstant; 
