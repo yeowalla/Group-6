@@ -1,4 +1,5 @@
  
+
 #include <stdio.h>
 #include <time.h>
 
@@ -13,110 +14,80 @@ extern "C" char get_pixel(int row, int col, int colour);
 
 int main(){
     init(0);
-    int nwp;
+
     int i;
     int j = -160;
     int reading;
-    int blackWhite;
-    float pConstant = 0.05;					//Kp
-    float dConstant = 0.002;						//Kd
-    float errorPeriod = 0.1;
+    float pConstant = 0.5;					//Kp
+    float dConstant = 0.2;						//Kd
+    float errorPeriod = 0.5;
     int motorConstant = 50;
 
     int fixArray[ELEMENTS];
+    	for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
+    	fixArray[i] = j;
+    	j++;
+    	}
+
     int camArray[ELEMENTS];
     int errorArray[ELEMENTS];
 
-    int errorSum;
-    int pSignal = 0;								//errorSum*pConstant;
+    int errorSum = 0;
+    int pSignal = errorSum*pConstant;
     int currentError = 0;
     int previousError = 0;
-    int dSignal = 0;                                                      //((currentError-previousError)/errorPeriod)*dConstant;
-    int signalPID = 0;
+    int dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
+    int signalPID = pSignal+dSignal;
 
-    int leftMotor;
-    int rightMotor = (-1)*rightMotor;
-
- 
-    for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
-    	fixArray[i] = j;
-    	j++;    
-    }
-
+    double leftMotor;
+    			//if(leftMotor > 255){leftMotor = 255;}
+    			//if(leftMotor < -255){leftMotor = -255;}
+    double rightMotor;
+    			//if(rightMotor > 255){rightMotor = 255;}
+			//if(rightMotor < 255){rightMotor = -255;}
 
 
 while(true){
+
     take_picture();
-    nwp = 0;															//number of white pixels
-	 for (i=0; i<ELEMENTS;i++){
-	 blackWhite = 0;
-	 reading = get_pixel(i, 120, 3);								//fills camera array
-		if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
-		camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
-	}
-    printf("Cam signal: %d \n", camArray[180]);
+    int nwp = 0;															//number of white pixels
+    int blackWhite;
+    for (i=0; i<320;i++){
+       blackWhite = 0;
+       reading = get_pixel(i, 40, 3);				//fills camera array
+       if(reading > 127){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
+       camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
+    }
 
-    for (i=0; i<ELEMENTS;i++){
-    errorArray[i] = fixArray[i]*camArray[i];		//fills errorArray with products between fix and cam array
+    for (i=0; i<320;i++){					//multiply fixed array and camera array
+      errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
     }
 
 
-    errorSum = 0;
-    for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
-    errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
+    for (i=0; i<320;i++){					//sums up all numbers in error array
+      errorSum = errorSum + errorArray[i];			//and modifies the errorSum variable
     }
-	 
+    
+    previousError = currentError;				//These two statements for calculating derivative signal
     currentError = errorSum;
-    pSignal = errorSum*pConstant;
-    printf("P signal: %d \n", pSignal);
-
-
-    Sleep (errorPeriod, 0);
-    dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
-    previousError = currentError;
-    printf("D signal: %d \n", dSignal);
-
+    printf("PID Signal is: %d", signalPID);
     
-    signalPID = pSignal+dSignal;
-    printf("PID signal: %d \n", signalPID);
-    printf("number of white pixels: %d \n", nwp);
-
-
-    if(nwp > 0){
-		//if(leftMotor > 255){leftMotor = 255;}
-		//if(leftMotor < -255){leftMotor = -255;}
-		//if(rightMotor < -255){rightMotor = -255;}
-		//if(rightMotor > 255){rightMotor = 255;}	
-		//if(errorSum < 10 && errorSum > -10){
-		//rightMotor = motorConstant;
-		//leftMotor = -motorConstant;}
-    		
-	 	if(signalPID < 0){
-	 	rightMotor = motorConstant+signalPID;
-	 	set_motor(2, rightMotor);
-	 	leftMotor = motorConstant/rightMotor;
-	 	set_motor(1, leftMotor);
-	 	}
-	 	else if(signalPID > 0){
-	 	leftMotor = motorConstant+signalPID;
-	 	set_motor(1, leftMotor);
-	 	rightMotor = motorConstant/leftMotor;
-	 	set_motor(2, rightMotor);
-	 	}
-	 	else {leftMotor = motorConstant;
-		      set_motor(1, leftMotor);
-		     rightMotor = motorConstant;}
-		      set_motor(2, rightMotor);
-    		}
-    else {leftMotor = -previousError;
-	  set_motor(1, leftMotor);
-	  rightMotor = -previousError;
-	  set_motor(2, rightMotor);}
-	 
-    printf("left motor: %d \n", leftMotor);
-    printf("right motor: %d \n", rightMotor);
+	 if(nwp = 0){
+	 leftMotor = -motorConstant; rightMotor = -motorConstant;}
+      
+	 if(signalPID < 0){
+	 	rightMotor = signalPID;
+	 	leftMotor = -1/rightMotor;
+	 }
+	 else(signalPID > 0){
+	 	leftMotor = signalPID;
+	 	rightMotor = -1/leftMotor;
+	 }
     
-    Sleep (errorPeriod, 0);
+
+    set_motor(1, leftMotor);
+    set_motor(2, (-1)*rightMotor;);
+    Sleep (0, errorPeriod*100000);
     
 }
 return 0;
