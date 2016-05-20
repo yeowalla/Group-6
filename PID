@@ -1,3 +1,4 @@
+ 
 #include <stdio.h>
 #include <time.h>
 
@@ -33,81 +34,67 @@ int main(){
     int dSignal = 0;                                                      //((currentError-previousError)/errorPeriod)*dConstant;
     int signalPID = 0;
 
-    double leftMotor;
-    double rightMotor = (-1)*rightMotor;
+    int leftMotor;
+    int rightMotor = (-1)*rightMotor;
     
-int array1(){
     for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
     	fixArray[i] = j;
     	j++;    
     }
-    return 0;
+
 }
 
 while(true){
-int array2(){
     take_picture();
     nwp = 0;															//number of white pixels
 	 for (i=0; i<ELEMENTS;i++){
 	 blackWhite = 0;
 	 reading = get_pixel(i, 120, 3);								//fills camera array
 		if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
-		amArray[i] = blackWhite;										//each of the numbers in the array are <> 128
+		camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
 		}
-    return 0;
-}
 
-int array3(){
+
     for (i=0; i<ELEMENTS;i++){										
     errorArray[i] = fixArray[i]*camArray[i];		//fills errorArray with products between fix and cam array
     }
-    return 0;
-}
 
-int sumOfError(){
+
     errorSum = 0;
-	 for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
-	 errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
-	 }
+    for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
+    errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
+    }
+	 
     currentError = errorSum;
-    return 0;
-}
-
-int proportionalSignal(){
     pSignal = errorSum*pConstant;
     printf("P signal: %d %s \n", pSignal);
-    return 0;
-}
 
-int derivativeSignal(){
+
     Sleep (0,errorPeriod*100000);
     dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
     previousError = currentError;
     printf("D signal: %d %s \n", dSignal);
-    return 0;
-}
 
-int pidError(){
+    
     signalPID = pSignal+dSignal;
     printf("PID signal: %d %s \n", signalPID);
-    return 0;
-}
 
-int motorControl(){
+
+
     if(nwp > 0){
-    		if(errorSum < 10 && errorSum > -10){
-    		rightMotor = motorConstant;
-    		leftMotor = -motorConstant;
+		if(errorSum < 10 && errorSum > -10){
+		rightMotor = motorConstant;
+		leftMotor = -motorConstant;
     		}
-	 		else if(signalPID < 0){
-	 		rightMotor = (signalPID/(160*1*pConstant))*255;
-	 		leftMotor = motorConstant/rightMotor;
-	 		}
-	 		else if(signalPID > 0){
-	 		leftMotor = (signalPID/(160*1*pConstant))*255;
-	 		rightMotor = motorConstant/leftMotor;
-	 		}
-	 		else {leftMotor = motorConstant; rightMotor = motorConstant;}
+	 	else if(signalPID < 0){
+	 	rightMotor = (signalPID/(160))*255;
+	 	leftMotor = motorConstant/rightMotor;
+	 	}
+	 	else if(signalPID > 0){
+	 	leftMotor = (signalPID/(160))*255;
+	 	rightMotor = motorConstant/leftMotor;
+	 	}
+	 	else {leftMotor = motorConstant; rightMotor = motorConstant;}
     		}
     else {leftMotor = -previousError; rightMotor = -previousError;}
 
@@ -115,7 +102,6 @@ int motorControl(){
     set_motor(2, rightMotor);
     Sleep (0, errorPeriod*100000);
     
-    return 0;
 }
 return 0;
 }
