@@ -45,7 +45,6 @@ int array1(){
 }
 
 while(true){
-	
 int array2(){
     take_picture();
     nwp = 0;															//number of white pixels
@@ -71,7 +70,6 @@ int sumOfError(){
 	 errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
 	 }
     currentError = errorSum;
-    
     return 0;
 }
 
@@ -106,7 +104,7 @@ int motorControl(){
 	 		leftMotor = motorConstant/rightMotor;
 	 		}
 	 		else if(signalPID > 0){
-	 		leftMotor = (signalPID/(160*1*pConstant)*255;
+	 		leftMotor = (signalPID/(160*1*pConstant))*255;
 	 		rightMotor = motorConstant/leftMotor;
 	 		}
 	 		else {leftMotor = motorConstant; rightMotor = motorConstant;}
@@ -116,7 +114,7 @@ int motorControl(){
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
     Sleep (0, errorPeriod*100000);
-    }
+    
     return 0;
 }
 return 0;
