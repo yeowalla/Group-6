@@ -45,16 +45,16 @@ int array1(){
 }
 
 while(true){
+	
 int array2(){
     take_picture();
     nwp = 0;															//number of white pixels
-    int blackWhite;
-	for (i=0; i<ELEMENTS;i++){
-	blackWhite = 0;
-	reading = get_pixel(i, 120, 3);								//fills camera array
-	if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
-	camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
-	}
+	 for (i=0; i<ELEMENTS;i++){
+	 blackWhite = 0;
+	 reading = get_pixel(i, 120, 3);								//fills camera array
+		if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
+		amArray[i] = blackWhite;										//each of the numbers in the array are <> 128
+		}
     return 0;
 }
 
@@ -77,13 +77,15 @@ int sumOfError(){
 
 int proportionalSignal(){
     pSignal = errorSum*pConstant;
+    printf("P signal: %d %s \n", pSignal);
     return 0;
 }
 
 int derivativeSignal(){
-    Sleep (0.errorPeriod*100000);pSignal+dSignal;
+    Sleep (0,errorPeriod*100000);
     dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
     previousError = currentError;
+    printf("D signal: %d %s \n", dSignal);
     return 0;
 }
 
@@ -94,26 +96,28 @@ int pidError(){
 }
 
 int motorControl(){
-    while(true){
     if(nwp > 0){
-	 if(signalPID < 0){
-	 	rightMotor = (signalPID/100)*255;
-	 	leftMotor = motorConstant/rightMotor;
-	 }
-	 else if(signalPID > 0){
-	 	leftMotor = (signalPID/100)*255;
-	 	rightMotor = motorConstant/leftMotor;
-	 }
-	 else {leftMotor = motorConstant; rightMotor = motorConstant;}
-    }
-    else {leftMotor = -motorConstant; rightMotor = -motorConstant;}
+    		if(errorSum < 10 && errorSum > -10){
+    		rightMotor = motorConstant;
+    		leftMotor = -motorConstant;
+    		}
+	 		else if(signalPID < 0){
+	 		rightMotor = (signalPID/(160*1*pConstant))*255;
+	 		leftMotor = motorConstant/rightMotor;
+	 		}
+	 		else if(signalPID > 0){
+	 		leftMotor = (signalPID/(160*1*pConstant)*255;
+	 		rightMotor = motorConstant/leftMotor;
+	 		}
+	 		else {leftMotor = motorConstant; rightMotor = motorConstant;}
+    		}
+    else {leftMotor = -previousError; rightMotor = -previousError;}
 
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
     Sleep (0, errorPeriod*100000);
     }
     return 0;
-    }
 }
 return 0;
 }
