@@ -17,7 +17,7 @@ int main(){
     int j = -160;
     int reading;
     int blackWhite;
-    float pConstant = 1;					//Kp
+    float pConstant = 0.5;					//Kp
     float dConstant = 0.2;						//Kd
     float errorPeriod = 0.1;
     int motorConstant = 50;
@@ -66,13 +66,12 @@ int array3(){
 }
 
 int sumOfError(){
-    while(true){
     errorSum = 0;
-	for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
-	errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
-	}
+	 for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
+	 errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
+	 }
     currentError = errorSum;
-    }
+    
     return 0;
 }
 
