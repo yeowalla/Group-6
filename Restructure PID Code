@@ -1,5 +1,3 @@
- 
-
 #include <stdio.h>
 #include <time.h>
 
@@ -18,13 +16,15 @@ int main(){
     int i;
     int j = -160;
     int reading;
-    float pConstant = 0.5;					//Kp
-    float dConstant = 0.2;						//Kd
+    float pConstant = 0.05;					//Kp
+    float dConstant = 0.02;					//Kd
     float errorPeriod = 0.5;
     int motorConstant = 50;
+    int blackWhite;
+    int nwp;
 
     int fixArray[ELEMENTS];
-    	for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
+    	for (i=0; i<(ELEMENTS);i++){				//fills fixed array from -160 to 160
     	fixArray[i] = j;
     	j++;
     	}
@@ -33,61 +33,66 @@ int main(){
     int errorArray[ELEMENTS];
 
     int errorSum = 0;
-    int pSignal = errorSum*pConstant;
+    int pSignal;
     int currentError = 0;
     int previousError = 0;
-    int dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
-    int signalPID = pSignal+dSignal;
+    int dSignal;
+    int signalPID;
 
-    double leftMotor;
-    			//if(leftMotor > 255){leftMotor = 255;}
-    			//if(leftMotor < -255){leftMotor = -255;}
-    double rightMotor;
-    			//if(rightMotor > 255){rightMotor = 255;}
-			//if(rightMotor < 255){rightMotor = -255;}
+    int leftMotor;
+    int rightMotor;
+
 
 
 while(true){
-
+		
     take_picture();
-    int nwp = 0;															//number of white pixels
-    int blackWhite;
+    nwp = 0;
+    dSignal = ((currentError-previousError)/errorPeriod)*dConstant;	
+	 previousError = currentError;	
+    errorSum = 0;														//number of white pixels
     for (i=0; i<320;i++){
        blackWhite = 0;
-       reading = get_pixel(i, 40, 3);				//fills camera array
+       reading = get_pixel(i, 40, 3);						//fills camera array
        if(reading > 127){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
-       camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
+       camArray[i] = blackWhite;								//each of the numbers in the array are <> 128
     }
 
-    for (i=0; i<320;i++){					//multiply fixed array and camera array
+    for (i=0; i<320;i++){										//multiply fixed array and camera array
       errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
     }
 
 
-    for (i=0; i<320;i++){					//sums up all numbers in error array
-      errorSum = errorSum + errorArray[i];			//and modifies the errorSum variable
+    for (i=0; i<320;i++){										//sums up all numbers in error array
+      errorSum = errorSum + errorArray[i];				//and modifies the errorSum variable
     }
     
-    previousError = currentError;				//These two statements for calculating derivative signal
+    pSignal = errorSum*pConstant;			
     currentError = errorSum;
-    printf("PID Signal is: %d", signalPID);
+    signalPID = pSignal+dSignal;
+    
+    printf("P Signal is:  %d", pSignal);
+    printf("D Signal is:  %d", dSignal);
+    printf("PID Signal is:  %d", signalPID);
+	 printf("NWP Signal is:  %d", nwp);   
     
 	 if(nwp = 0){
-	 leftMotor = -motorConstant; rightMotor = -motorConstant;}
-      
-	 if(signalPID < 0){
+	 leftMotor = -motorConstant; 
+	 rightMotor = -motorConstant;
+	 }
+	 else if(signalPID < 0){
 	 	rightMotor = signalPID;
 	 	leftMotor = -1/rightMotor;
 	 }
-	 else(signalPID > 0){
+	 else if(signalPID > 0){
 	 	leftMotor = signalPID;
 	 	rightMotor = -1/leftMotor;
 	 }
     
 
     set_motor(1, leftMotor);
-    set_motor(2, (-1)*rightMotor;);
-    Sleep (0, errorPeriod*100000);
+    set_motor(2, -rightMotor);
+    Sleep (errorPeriod, 0);
     
 }
 return 0;
