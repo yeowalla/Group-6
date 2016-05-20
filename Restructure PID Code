@@ -1,0 +1,123 @@
+ 
+#include <stdio.h>
+#include <time.h>
+
+extern "C" int init(int d_lev);
+extern "C" int Sleep(int sec, int usec);
+extern "C" int set_motor(int motor, int speed);
+extern "C" int take_picture();
+extern "C" char get_pixel(int row, int col, int colour);
+
+
+#define ELEMENTS 320
+
+int main(){
+    init(0);
+    int nwp;
+    int i;
+    int j = -160;
+    int reading;
+    int blackWhite;
+    float pConstant = 0.05;					//Kp
+    float dConstant = 0.002;						//Kd
+    float errorPeriod = 0.1;
+    int motorConstant = 50;
+
+    int fixArray[ELEMENTS];
+    int camArray[ELEMENTS];
+    int errorArray[ELEMENTS];
+
+    int errorSum;
+    int pSignal = 0;								//errorSum*pConstant;
+    int currentError = 0;
+    int previousError = 0;
+    int dSignal = 0;                                                      //((currentError-previousError)/errorPeriod)*dConstant;
+    int signalPID = 0;
+
+    int leftMotor;
+    int rightMotor = (-1)*rightMotor;
+
+ 
+    for (i=0; i<(ELEMENTS);i++){					//fills fixed array from -160 to 160
+    	fixArray[i] = j;
+    	j++;    
+    }
+
+
+
+while(true){
+    take_picture();
+    nwp = 0;															//number of white pixels
+	 for (i=0; i<ELEMENTS;i++){
+	 blackWhite = 0;
+	 reading = get_pixel(i, 120, 3);								//fills camera array
+		if(reading > 127){ blackWhite = 1; nwp++;}				//cameraArray receives either a 0 or 1 based on whether
+		camArray[i] = blackWhite;										//each of the numbers in the array are <> 128
+	}
+    printf("Cam signal: %d \n", camArray[180]);
+
+    for (i=0; i<ELEMENTS;i++){
+    errorArray[i] = fixArray[i]*camArray[i];		//fills errorArray with products between fix and cam array
+    }
+
+
+    errorSum = 0;
+    for (i=0; i<ELEMENTS;i++){										//sums up all numbers in error array
+    errorSum = errorSum + errorArray[i];						//and modifies the errorSum variable
+    }
+	 
+    currentError = errorSum;
+    pSignal = errorSum*pConstant;
+    printf("P signal: %d \n", pSignal);
+
+
+    Sleep (errorPeriod, 0);
+    dSignal = ((currentError-previousError)/errorPeriod)*dConstant;
+    previousError = currentError;
+    printf("D signal: %d \n", dSignal);
+
+    
+    signalPID = pSignal+dSignal;
+    printf("PID signal: %d \n", signalPID);
+    printf("number of white pixels: %d \n", nwp);
+
+
+    if(nwp > 0){
+		//if(leftMotor > 255){leftMotor = 255;}
+		//if(leftMotor < -255){leftMotor = -255;}
+		//if(rightMotor < -255){rightMotor = -255;}
+		//if(rightMotor > 255){rightMotor = 255;}	
+		//if(errorSum < 10 && errorSum > -10){
+		//rightMotor = motorConstant;
+		//leftMotor = -motorConstant;}
+    		
+	 	if(signalPID < 0){
+	 	rightMotor = motorConstant+signalPID;
+	 	set_motor(2, rightMotor);
+	 	leftMotor = motorConstant/rightMotor;
+	 	set_motor(1, leftMotor);
+	 	}
+	 	else if(signalPID > 0){
+	 	leftMotor = motorConstant+signalPID;
+	 	set_motor(1, leftMotor);
+	 	rightMotor = motorConstant/leftMotor;
+	 	set_motor(2, rightMotor);
+	 	}
+	 	else {leftMotor = motorConstant;
+		      set_motor(1, leftMotor);
+		     rightMotor = motorConstant;}
+		      set_motor(2, rightMotor);
+    		}
+    else {leftMotor = -previousError;
+	  set_motor(1, leftMotor);
+	  rightMotor = -previousError;
+	  set_motor(2, rightMotor);}
+	 
+    printf("left motor: %d \n", leftMotor);
+    printf("right motor: %d \n", rightMotor);
+    
+    Sleep (errorPeriod, 0);
+    
+}
+return 0;
+}
