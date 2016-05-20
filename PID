@@ -90,6 +90,7 @@ int derivativeSignal(){
 
 int pidError(){
     signalPID = pSignal+dSignal;
+    printf("PID signal: %d %s \n", signalPID);
     return 0;
 }
 
@@ -98,15 +99,15 @@ int motorControl(){
     if(nwp > 0){
 	 if(signalPID < 0){
 	 	rightMotor = (signalPID/100)*255;
-	 	leftMotor = 1/rightMotor;
+	 	leftMotor = motorConstant/rightMotor;
 	 }
 	 else if(signalPID > 0){
 	 	leftMotor = (signalPID/100)*255;
-	 	rightMotor = 1/leftMotor;
+	 	rightMotor = motorConstant/leftMotor;
 	 }
-	 else {leftMotor = 60; rightMotor = 60;}
+	 else {leftMotor = motorConstant; rightMotor = motorConstant;}
     }
-    else {leftMotor = -60; rightMotor = -60;}
+    else {leftMotor = -motorConstant; rightMotor = -motorConstant;}
 
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
