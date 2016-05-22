@@ -18,7 +18,7 @@ int main(){
     int reading;
     float pConstant = 0.05;					//Kp
     float dConstant = 0.02;					//Kd
-    float errorPeriod = 0.5;
+    float errorPeriod = 0.2;
     int motorConstant = 50;
     int blackWhite;
     int nwp;
@@ -49,7 +49,7 @@ while(true){
     take_picture();
     nwp = 0;
     dSignal = ((currentError-previousError)/errorPeriod)*dConstant;	
-	 previousError = currentError;	
+    previousError = currentError;	
     errorSum = 0;														//number of white pixels
     for (i=0; i<320;i++){
        blackWhite = 0;
@@ -74,24 +74,28 @@ while(true){
     printf("P Signal is:  %d", pSignal);
     printf("D Signal is:  %d", dSignal);
     printf("PID Signal is:  %d", signalPID);
-	 printf("NWP Signal is:  %d", nwp); 
+    printf("NWP Signal is:  %d", nwp); 
 	
 //	printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d/n", pSignal, dSignal, signalPID, nwp);
     
-	 if(nwp = 0){
+    if(nwp < 10){
 	 leftMotor = -motorConstant; 
 	 rightMotor = -motorConstant;
-	 }
-	 else if(signalPID < 0){
+    }
+    else {
+	 if(errorSum < -10){
 	 	rightMotor = signalPID;
-	 	leftMotor = -1/rightMotor;
+	 	leftMotor = 255 - rightMotor;
 	 }
-	 else if(signalPID > 0){
+	 else if(errorSum > 10){
 	 	leftMotor = signalPID;
-	 	rightMotor = -1/leftMotor;
+	 	rightMotor = 255 - leftMotor;
 	 }
-    
-
+    	 else {
+		leftMotor = motorConstant;
+	 	rightMotor = motorConstant;
+	}
+    }
     set_motor(1, leftMotor);
     set_motor(2, -rightMotor);
     Sleep (errorPeriod, 0);
