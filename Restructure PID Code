@@ -98,7 +98,7 @@ while(true){
     }
     set_motor(1, leftMotor);
     set_motor(2, -rightMotor);
-    Sleep (errorPeriod, 0);
+    Sleep (0, errorPeriod*100000);
     
 }
 return 0;
