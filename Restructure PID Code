@@ -17,19 +17,22 @@ int main(){
     init(0);
 
     int i;
-    int j = -160;
+    int j = 160;
     int reading;
-    float pConstant = 0.25;					//Kp
-    float dConstant = 0.8;					//Kd
-    int errorPeriod = 5000;
-    int motorConstant = 40;
+    float pConstant = 0.95;					//Kp
+    float dConstant = 0.099;					//Kd
+    double errorPeriod = 1500;
+    double errorSeconds = errorPeriod/1000000000;
+    int motorConstant = 175;
     int blackWhite;
     int nwp;
+    int average;
+
 
     int fixArray[ELEMENTS];
     	for (i=0; i<(ELEMENTS);i++){				//fills fixed array from -160 to 160
     	fixArray[i] = j;
-    	j++;
+    	j--;
     	}
 
     int camArray[ELEMENTS];
@@ -45,24 +48,24 @@ int main(){
     int leftMotor;
     int rightMotor;
 
-   //connect_to_server("130.195.6.196", 1024);
-   //send_to_server("Please");
-   //char message[24];
-   //receive_from_server(message);
-   //printf("%s", message);
+  // connect_to_server("130.195.6.196", 1024);
+  // send_to_server("Please");
+  // char message[24];
+  // receive_from_server(message);
+  // printf("%s", message);
    //Sleep(5,0);
 
 while(true){
 		
     take_picture();
     nwp = 1;
-    dSignal = ((currentError-previousError)/errorPeriod)*dConstant;	
-    previousError = currentError;	
+    dSignal = (currentError-previousError)/(errorSeconds+1)*dConstant;	
+    previousError = currentError;
     errorSum = 0;														//number of white pixels
     for (i=0; i<320;i++){
        blackWhite = 0;
-       reading = get_pixel(i, 40, 3);						//fills camera array
-       if(reading > 128){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
+       reading = get_pixel(i, 120, 3);						//fills camera array
+       if(reading > 130){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
        camArray[i] = blackWhite;								//each of the numbers in the array are <> 128
     }
 
@@ -74,7 +77,7 @@ while(true){
     for (i=0; i<320;i++){										//sums up all numbers in error array
       errorSum = errorSum + errorArray[i];				//and modifies the errorSum variable
     }
-    average = current/nwp
+    average = errorSum/nwp;
     pSignal = average*pConstant;
    	
     currentError = errorSum;
@@ -85,34 +88,34 @@ while(true){
     //printf("PID Signal is:  %d", signalPID);
     //printf("NWP Signal is:  %d", nwp); 
 	
- 	 printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d/n", pSignal, dSignal, signalPID, nwp);
+ 	 printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d\n", pSignal, dSignal, signalPID, nwp);
     
-    if(average = 0){
-	 leftMotor = -motorConstant; 
-	 rightMotor = -motorConstant;
+    if(average == 0){
+	 leftMotor = -motorConstant/(2);
+	 rightMotor = -motorConstant/(2);
     }
     else {
-	 if(errorSum < -20){
+	 if(errorSum < 0){
 	 	if(signalPID > 255){signalPID = 255;}
 	 	if(signalPID < -255){signalPID = -255;}
-	 	rightMotor = signalPID;
-	 	leftMotor = -signalPID;
+	 	rightMotor = motorConstant+signalPID;
+	 	leftMotor = rightMotor/10;
 	 }
-	 else if(errorSum > 20){
+	 else if(errorSum > 0){
 		if(signalPID > 255){signalPID = 255;}
 	 	if(signalPID < -255){signalPID = -255;}
-	 	leftMotor = signalPID;
-	 	rightMotor = -leftMotor;
+	 	leftMotor = motorConstant+signalPID;
+	 	rightMotor = leftMotor/10;
 	 }
     else{
-		leftMotor = -motorConstant;
-	 	rightMotor = -motorConstant;
+		leftMotor = 255;
+	 	rightMotor = 255;
 	 }
 	 }
     set_motor(1, leftMotor);
-    set_motor(2, -rightMotor);
+    set_motor(2, rightMotor);
     Sleep (0, errorPeriod);
-    
+  
 }
 return 0;
 }
