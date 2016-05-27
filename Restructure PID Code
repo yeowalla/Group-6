@@ -19,18 +19,19 @@ int main(){
     int i;
     int j = 160;
     int reading;
-    float pConstant = 0.75;					//Kp
-    float dConstant = 0.00000002;					//Kd
-    double errorPeriod = 3000;
+    float pConstant = 0.39;					//Kp
+    float dConstant = 0.00000000001;					//Kd
+    double errorPeriod = 100;
     double errorSeconds = errorPeriod/1000000000;
-    int motorConstant = 120;
+    int motorConstant = 85;
     int blackWhite;
     int nwp;
     int average;
-
+    int Xroad = 0;
+    int oscFix = 0;
 
     int fixArray[ELEMENTS];
-    	for (i=0; i<(ELEMENTS);i++){				//fills fixed array from -160 to 160
+    	for (i=0; i<(ELEMENTS);i++){
     	fixArray[i] = j;
     	j--;
     	}
@@ -60,13 +61,14 @@ while(true){
 		
     take_picture();
     nwp = 1;
-    //dSignal = (currentError-previousError)/(errorSeconds)*dConstant;	
+     dSignal = (currentError-previousError)/(errorSeconds)*dConstant;	
     previousError = currentError;
-    errorSum = 0;														//number of white pixels
+    errorSum = 0;
+														//number of white pixels
     for (i=0; i<320;i++){
        blackWhite = 0;
        reading = get_pixel(i, 120, 3);						//fills camera array
-       if(reading > 130){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
+       if(reading > 126){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
        camArray[i] = blackWhite;								//each of the numbers in the array are <> 128
     }
 
@@ -82,42 +84,65 @@ while(true){
     pSignal = average*pConstant;
   
     currentError = errorSum;
-    signalPID = pSignal; //+dSignal;
+    signalPID = pSignal+dSignal;
 
     if (signalPID < 0){absPID = signalPID*(-1);}
-    else {absPID = signalPID;}
+                                                                                                                                                                                                                                                                                                                                                           else {absPID = signalPID;}
 
     //printf("P Signal is:  %d", pSignal);
     //printf("D Signal is:  %d", dSignal);
     //printf("PID Signal is:  %d", signalPID);
-    //printf("NWP Signal is:  %d", nwp); 
-	
- 	 printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d\n", pSignal, dSignal, signalPID, nwp);
-    
-    if(average == 0){
-	 leftMotor = -100;
-	 rightMotor = -100;
+    //printf("NWP Signal is:  %d", nwp);
+
+    printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d, average: %04d\n", pSignal, dSignal, signalPID, nwp, average);
+
+
+    if(nwp > 280 && Xroad == 0){
+    		set_motor(1, 120);
+    		set_motor(2, 120);
+   		Sleep (0, 2500000);
+   		Xroad++;
+    }
+    else if(nwp > 290 && Xroad == 1){
+		set_motor(1, -255);
+    		set_motor(2, 255);
+   		Sleep (0, 600000);
+   		Xroad++;
+    }
+    else if(oscFix == 30){
+		set_motor(1, 255);
+		set_motor(2,-255);
+		Sleep (0, 1200000);
+		oscFix = 0;
+    }
+    else if(average == 0){
+	 		leftMotor = -100;
+	 		rightMotor = -100;
+			oscFix++;
     }
     else {
-	 if(errorSum < 0){
-	 	if(signalPID > 255){signalPID = 255;}
-	 	if(signalPID < -255){signalPID = -255;}
-	 	rightMotor = motorConstant+absPID;
-	 	leftMotor = rightMotor/5;
-	 }
-	 else if(errorSum > 0){
-		if(signalPID > 255){signalPID = 255;}
-	 	if(signalPID < -255){signalPID = -255;}
-	 	leftMotor = motorConstant+absPID;
-	 	rightMotor = leftMotor/5;
-	 }
-    else{
-		leftMotor = motorConstant;
-	 	rightMotor = motorConstant;
-	 }
+	 		if(average < 0){
+	 			if(signalPID > 255){signalPID = 255;}
+	 			if(signalPID < -255){signalPID = -255;}
+	 			rightMotor = motorConstant+absPID;
+	 			leftMotor = rightMotor/6;
+				
+	 		}
+	 		else if(average > 0){
+				if(signalPID > 255){signalPID = 255;}
+	 			if(signalPID < -255){signalPID = -255;}
+	 			leftMotor = motorConstant+absPID;
+	 			rightMotor = leftMotor/6;
+				
+	 			}
+    		else{
+	 		leftMotor = motorConstant;
+	 		rightMotor = motorConstant;
+			
+	 		}
     }
 
-	printf("leftMotor: %04d, rightMotor: %04d\n", leftMotor, rightMotor);
+	 printf("leftMotor: %04d, rightMotor: %04d, Crossroad: %04d, oscFix: %04d\n", leftMotor, rightMotor, Xroad, oscFix);
 
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
