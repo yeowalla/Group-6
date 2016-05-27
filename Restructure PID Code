@@ -19,11 +19,11 @@ int main(){
     int i;
     int j = 160;
     int reading;
-    float pConstant = 0.95;					//Kp
-    float dConstant = 0.099;					//Kd
-    double errorPeriod = 1500;
+    float pConstant = 0.75;					//Kp
+    float dConstant = 0.00000002;					//Kd
+    double errorPeriod = 3000;
     double errorSeconds = errorPeriod/1000000000;
-    int motorConstant = 175;
+    int motorConstant = 120;
     int blackWhite;
     int nwp;
     int average;
@@ -44,6 +44,7 @@ int main(){
     int previousError = 0;
     int dSignal;
     int signalPID;
+    int absPID;
 
     int leftMotor;
     int rightMotor;
@@ -53,13 +54,13 @@ int main(){
   // char message[24];
   // receive_from_server(message);
   // printf("%s", message);
-   //Sleep(5,0);
+  // Sleep(5,0);
 
 while(true){
 		
     take_picture();
     nwp = 1;
-    dSignal = (currentError-previousError)/(errorSeconds+1)*dConstant;	
+    //dSignal = (currentError-previousError)/(errorSeconds)*dConstant;	
     previousError = currentError;
     errorSum = 0;														//number of white pixels
     for (i=0; i<320;i++){
@@ -79,10 +80,13 @@ while(true){
     }
     average = errorSum/nwp;
     pSignal = average*pConstant;
-   	
+  
     currentError = errorSum;
-    signalPID = pSignal+dSignal;
-    
+    signalPID = pSignal; //+dSignal;
+
+    if (signalPID < 0){absPID = signalPID*(-1);}
+    else {absPID = signalPID;}
+
     //printf("P Signal is:  %d", pSignal);
     //printf("D Signal is:  %d", dSignal);
     //printf("PID Signal is:  %d", signalPID);
@@ -91,32 +95,36 @@ while(true){
  	 printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d\n", pSignal, dSignal, signalPID, nwp);
     
     if(average == 0){
-	 leftMotor = -motorConstant/(2);
-	 rightMotor = -motorConstant/(2);
+	 leftMotor = -100;
+	 rightMotor = -100;
     }
     else {
 	 if(errorSum < 0){
 	 	if(signalPID > 255){signalPID = 255;}
 	 	if(signalPID < -255){signalPID = -255;}
-	 	rightMotor = motorConstant+signalPID;
-	 	leftMotor = rightMotor/10;
+	 	rightMotor = motorConstant+absPID;
+	 	leftMotor = rightMotor/5;
 	 }
 	 else if(errorSum > 0){
 		if(signalPID > 255){signalPID = 255;}
 	 	if(signalPID < -255){signalPID = -255;}
-	 	leftMotor = motorConstant+signalPID;
-	 	rightMotor = leftMotor/10;
+	 	leftMotor = motorConstant+absPID;
+	 	rightMotor = leftMotor/5;
 	 }
     else{
-		leftMotor = 255;
-	 	rightMotor = 255;
+		leftMotor = motorConstant;
+	 	rightMotor = motorConstant;
 	 }
-	 }
+    }
+
+	printf("leftMotor: %04d, rightMotor: %04d\n", leftMotor, rightMotor);
+
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
     Sleep (0, errorPeriod);
   
 }
 return 0;
-
 }
+
+ 
