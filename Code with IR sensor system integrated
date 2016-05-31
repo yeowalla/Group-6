@@ -1,0 +1,241 @@
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+extern "C" int init(int d_lev);
+extern "C" int Sleep(int sec, int usec);
+extern "C" int set_motor(int motor, int speed);
+extern "C" int take_picture();
+extern "C" char get_pixel(int row, int col, int colour);
+extern "C" int read_analog(int ch_adc);
+
+extern "C" int connect_to_server( char server_addr[15],int port);
+extern "C" int send_to_server(char message[24]);
+extern "C" int receive_from_server(char message[24]);
+
+#define ELEMENTS 320
+
+int main(){
+    init(0);
+
+    int i;
+    int j = 160;
+    int reading;
+    int digSensorLeft;
+    int digSensorLeftAvg = 0;
+    int digSensorLeftTTL = 0;
+    int digSensorRight;
+    int digSensorRightAvg = 0;
+    int digSensorRightTTL = 0;
+    
+    float pConstant = 0.3;					//Kp
+    float dConstant = 0.00000000085;					//Kd
+    double errorPeriod = 100;
+    double errorSeconds = errorPeriod/1000000000;
+    
+    int motorConstant = 120;
+    int blackWhite;
+    int nwp;
+    int average;
+    int Xroad = 0;
+    int oscFix = 0;
+    int oscReset = 0;
+
+    int fixArray[ELEMENTS];
+    	for (i=0; i<(ELEMENTS);i++){
+    	fixArray[i] = j;
+    	j--;
+    	}
+
+    int camArray[ELEMENTS];
+    int errorArray[ELEMENTS];
+
+    int digErrorSum;
+    int currentDigError;
+    int previousDigError;
+    
+    int errorSum = 0;
+    int pSignal;
+    int currentError = 0;
+    int previousError = 0;
+    int dSignal;
+    int signalPID;
+    int absPID;
+
+    int leftMotor;
+    int rightMotor;
+
+  // char server_addr[15];
+  // sprintf(server_addr,"130.195.6.196");
+  // connect_to_server("130.195.6.196", 1024);
+  // char server_msg[24];
+  // sprintf(server_msg,"Please");
+  // send_to_server(server_msg);
+  // char pw[6];
+  // receive_from_server(pw);
+  // printf("pswd=%s\n", pw);
+  // send_to_server(pw);
+
+while(true){
+
+    take_picture();
+    nwp = 1;
+    dSignal = (currentError-previousError)/(errorSeconds)*dConstant;	
+    previousError = currentError;
+    errorSum = 0;
+
+    digSensorLeft = read_analog(1);
+    digSensorRight = read_analog(0);
+ 
+    printf("digSensorLeft: %04d, digSensorRight: %04d\n", digSensorLeft, digSensorRight);
+
+	   if(digSensorLeft > 500 && digSensorRight > 500){
+	     while(true){
+		  digSensorLeftTTL = 0;
+		  digSensorRightTTL = 0;
+		  digErrorSum = 0;
+		  dSignal = (currentError-previousError)/(errorSeconds)*dConstant;
+		  previousDigError = currentDigError;
+		  
+		  for(i=0; i<3; i++){
+		  digSensorLeft = read_digital(0);
+		  digSensorRight = read_digital(1);
+		  digSensorLeftTTL = digSensorLeftTTL + digSensorLeft; 
+		  digSensorRightTTL = digSensorRightTTL + digSensorRight;
+		  }
+		  
+		  digSensorLeftAvg = digSensorLeftTTL/3;
+		  digSensorRightAvg = digSensorRightTTL/3;
+		  digErrorSum = digSensorLeftAvg - digSensorRightAvg;
+		  printf("digSensorLeftAvg: %04d, digSensorRightAvg: %04d, digErrorSum: %d04\n", digSensorLeftAvg, digSensorRightAvg, digErrorSum);
+		  
+		  
+		  pSignal = digErrorSum*pConstant;
+		  
+		  if(dSignal < 0){dSignal = dSignal*(-1);}
+		  if(pSignal < 0){pSignal = pSignal*(-1);}
+
+		  currentDigError = digErrorSum;
+		  signalPID = pSignal+dSignal;
+		  printf("P: %04d, D: %04d, PIDSig: %04d\n", pSignal, dSignal, signalPID);
+		  
+		  if (signalPID < 0){absPID = signalPID*(-1);}
+		  
+		  if(digErrorSum == 0){
+	 		leftMotor = -100;
+	 		rightMotor = -100;
+			}
+			else {
+	 		if(digErrorSum < 0){
+	 			if(signalPID > 255){signalPID = 255;}
+	 			if(signalPID < -255){signalPID = -255;}
+	 			rightMotor = motorConstant+absPID;
+	 			leftMotor = rightMotor/16;
+	 		}
+	 		else if(digErrorSum > 0){
+				if(signalPID > 255){signalPID = 255;}
+	 			if(signalPID < -255){signalPID = -255;}
+	 			leftMotor = motorConstant+absPID;
+	 			rightMotor = leftMotor/16;				
+	 			}
+	 			
+	 	 printf("leftMotor: %04d, rightMotor: %04d\n", leftMotor, rightMotor);
+		 set_motor(1, leftMotor);
+		 set_motor(2, rightMotor);
+		 Sleep (0, errorPeriod);
+	      }
+	   }
+	   
+	   
+    for (i=0; i<320;i++){
+       blackWhite = 0;
+       reading = get_pixel(i, 120, 3);						//fills camera array
+       if(reading > 126){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
+       camArray[i] = blackWhite;								//each of the numbers in the array are <> 128
+    }
+
+    
+    for (i=0; i<320;i++){										//multiply fixed array and camera array
+      errorArray[i] = fixArray[i]*camArray[i];			//and fills array with those results
+    }
+
+
+    
+    for (i=0; i<320;i++){										//sums up all numbers in error array
+      errorSum = errorSum + errorArray[i];				//and modifies the errorSum variable
+    }
+    average = errorSum/nwp;
+    pSignal = average*pConstant;
+
+    if(dSignal < 0){dSignal = dSignal*(-1);}
+    if(pSignal < 0){pSignal = pSignal*(-1);}
+
+    currentError = errorSum;
+    signalPID = pSignal+dSignal;
+
+    if (signalPID < 0){absPID = signalPID*(-1);}
+    if (oscReset == 100){oscFix = 0; oscReset = 0;}                                                                                                                                                                                                                                                                                                                                                       else {absPID = signalPID;}
+
+    printf("P: %04d, D: %04d, PIDSig: %04d, NWP: %04d, average: %04d\n", pSignal, dSignal, signalPID, nwp, average);
+
+
+    if(nwp > 250 && Xroad == 0){
+    		set_motor(1, 120);
+    		set_motor(2, 140);
+   		Sleep (1, 0);
+   		Xroad++;
+    }
+    else if(nwp > 290 && Xroad == 1){
+		set_motor(1, -255);
+    		set_motor(2, 255);
+   		Sleep (0, 600000);
+   		Xroad++;
+    }
+    else if(oscFix == 100){
+		set_motor(1, -255);
+		set_motor(2, 255);
+		Sleep (2, 0);
+		oscFix = 0;
+		oscReset == 0;
+    }
+    else if(average == 0){
+	 		leftMotor = -100;
+	 		rightMotor = -100;
+			oscFix++;
+			oscReset == 0;
+    }
+    else {
+	 		if(average < 0){
+	 			if(signalPID > 255){signalPID = 255;}
+	 			if(signalPID < -255){signalPID = -255;}
+	 			rightMotor = motorConstant+absPID;
+	 			leftMotor = rightMotor/16;
+				oscReset++;
+
+	 		}
+	 		else if(average > 0){
+				if(signalPID > 255){signalPID = 255;}
+	 			if(signalPID < -255){signalPID = -255;}
+	 			leftMotor = motorConstant+absPID;
+	 			rightMotor = leftMotor/16;
+				oscReset++;
+	 			}
+    		else{
+	 		leftMotor = 100;
+	 		rightMotor = 100;
+			oscReset++;
+	 		}
+    }
+
+	 printf("leftMotor: %04d, rightMotor: %04d, Crossroad: %04d, oscFix: %04d, oscReset: %d\n", leftMotor, rightMotor, Xroad, oscFix, oscReset);
+
+    set_motor(1, leftMotor);
+    set_motor(2, rightMotor);
+    Sleep (0, errorPeriod);
+  
+}
+return 0;
+}
+
+ 
+
