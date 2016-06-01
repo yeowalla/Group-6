@@ -21,9 +21,9 @@ int main(){
     int i;
     int j = 160;
     int reading;
-    int digSensorLeft;
-    int digSensorLeftAvg = 0;
-    int digSensorLeftTTL = 0;
+    int digSensorFront;
+    int digSensorFrontAvg = 0;
+    int digSensorFrontTTL = 0;
     int digSensorRight;
     int digSensorRightAvg = 0;
     int digSensorRightTTL = 0;
@@ -84,30 +84,28 @@ while(true){
     previousError = currentError;
     errorSum = 0;
 
-    digSensorLeft = read_analog(1);
+    digSensorFront = read_analog(1);
     digSensorRight = read_analog(0);
  
-    printf("digSensorLeft: %04d, digSensorRight: %04d\n", digSensorLeft, digSensorRight);
+    printf("digSensorFront: %04d, digSensorRight: %04d\n", digSensorFront, digSensorRight);
 
-	   if(digSensorLeft > 500 && digSensorRight > 500){
+	   if(digSensorRight > 500 && Xroad > 0){
 	     while(true){
-		  digSensorLeftTTL = 0;
+		  digSensorFrontTTL = 0;
 		  digSensorRightTTL = 0;
 		  digErrorSum = 0;
 		  dSignal = (currentError-previousError)/(errorSeconds)*dConstant;
 		  previousDigError = currentDigError;
 		  
 		  for(i=0; i<3; i++){
-		  digSensorLeft = read_digital(0);
-		  digSensorRight = read_digital(1);
-		  digSensorLeftTTL = digSensorLeftTTL + digSensorLeft; 
+		  digSensorRight = read_analog(0);
 		  digSensorRightTTL = digSensorRightTTL + digSensorRight;
 		  }
 		  
-		  digSensorLeftAvg = digSensorLeftTTL/3;
+		  digSensorFront = read_analog(1);
 		  digSensorRightAvg = digSensorRightTTL/3;
-		  digErrorSum = digSensorLeftAvg - digSensorRightAvg;
-		  printf("digSensorLeftAvg: %04d, digSensorRightAvg: %04d, digErrorSum: %d04\n", digSensorLeftAvg, digSensorRightAvg, digErrorSum);
+		  digErrorSum = digSensorRightAvg - 350;
+		  printf("digSensorFront: %04d, digSensorRightAvg: %04d, digErrorSum: %d04\n", digSensorFrontAvg, digSensorRightAvg, digErrorSum);
 		  
 		  
 		  pSignal = digErrorSum*pConstant;
@@ -121,24 +119,30 @@ while(true){
 		  
 		  if (signalPID < 0){absPID = signalPID*(-1);}
 		  
-		  if(digErrorSum == 0){
-	 		leftMotor = -100;
-	 		rightMotor = -100;
+		  if(digSensorFront > 450){
+		    rightMotor = -255;
+		    leftMotor = 255;
+		    Sleep(2, 0);
+		    }  
+		  else if(digErrorSum > -80 && digErrorSum < 80){
+	 		leftMotor = 120;
+	 		rightMotor = 120;
 			}
-			else {
-	 		if(digErrorSum < 0){
+		  else {
+			if(digErrorSum < -80){
 	 			if(signalPID > 255){signalPID = 255;}
 	 			if(signalPID < -255){signalPID = -255;}
 	 			rightMotor = motorConstant+absPID;
-	 			leftMotor = rightMotor/16;
+	 			leftMotor = rightMotor/2;
 	 		}
-	 		else if(digErrorSum > 0){
+	 		else if(digErrorSum > 80){
 				if(signalPID > 255){signalPID = 255;}
 	 			if(signalPID < -255){signalPID = -255;}
 	 			leftMotor = motorConstant+absPID;
-	 			rightMotor = leftMotor/16;				
-	 			}
-	 			
+	 			rightMotor = leftMotor/2;				
+	 		}
+		 }		
+		  
 	 	 printf("leftMotor: %04d, rightMotor: %04d\n", leftMotor, rightMotor);
 		 set_motor(1, leftMotor);
 		 set_motor(2, rightMotor);
@@ -150,7 +154,7 @@ while(true){
     for (i=0; i<320;i++){
        blackWhite = 0;
        reading = get_pixel(i, 120, 3);						//fills camera array
-       if(reading > 126){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
+       if(reading > 119){ blackWhite = 1; nwp++;}		//cameraArray receives either a 0 or 1 based on whether
        camArray[i] = blackWhite;								//each of the numbers in the array are <> 128
     }
 
@@ -181,7 +185,7 @@ while(true){
 
     if(nwp > 250 && Xroad == 0){
     		set_motor(1, 120);
-    		set_motor(2, 140);
+    		set_motor(2, 160);
    		Sleep (1, 0);
    		Xroad++;
     }
@@ -210,9 +214,10 @@ while(true){
 	 			if(signalPID < -255){signalPID = -255;}
 	 			rightMotor = motorConstant+absPID;
 	 			leftMotor = rightMotor/16;
-				oscReset++;
+				oscReset++; Sleep(2, 0);
+		  }
 
-	 		}
+	 		
 	 		else if(average > 0){
 				if(signalPID > 255){signalPID = 255;}
 	 			if(signalPID < -255){signalPID = -255;}
@@ -232,10 +237,9 @@ while(true){
     set_motor(1, leftMotor);
     set_motor(2, rightMotor);
     Sleep (0, errorPeriod);
-  
+
+
 }
 return 0;
-}
-
- 
+ }
 
