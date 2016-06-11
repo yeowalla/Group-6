@@ -65,16 +65,16 @@ int main(){
     int leftMotor;
     int rightMotor;
 
-  // char server_addr[15];
-  // sprintf(server_addr,"130.195.6.196");
-  // connect_to_server("130.195.6.196", 1024);
-  // char server_msg[24];
-  // sprintf(server_msg,"Please");
-  // send_to_server(server_msg);
-  // char pw[6];
-  // receive_from_server(pw);
-  // printf("pswd=%s\n", pw);
-  // send_to_server(pw);
+  char server_addr[15];
+  sprintf(server_addr,"130.195.6.196");
+  connect_to_server("130.195.6.196", 1024);
+  char server_msg[24];
+  sprintf(server_msg,"Please");
+  send_to_server(server_msg);
+  char pw[6];
+  receive_from_server(pw);
+  printf("pswd=%s\n", pw);
+  send_to_server(pw);
 
 while(true){
 
@@ -168,6 +168,8 @@ while(true){
     for (i=0; i<320;i++){										//sums up all numbers in error array
       errorSum = errorSum + errorArray[i];				//and modifies the errorSum variable
     }
+    
+    
     average = errorSum/nwp;
     pSignal = average*pConstant;
 
