@@ -216,7 +216,7 @@ while(true){
 	 			if(signalPID < -255){signalPID = -255;}
 	 			rightMotor = motorConstant+absPID;
 	 			leftMotor = rightMotor/16;
-				oscReset++; Sleep(2, 0);
+				oscReset++;
 		  }
 
 	 		
